@@ -82,21 +82,36 @@ const findAndUpdate = (personName, done) => {
 };
 
 const removeById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findByIdAndDelete(personId)
+    .then(data => done(null, data))
+    .catch(err => done(err));
 };
 
 const removeManyPeople = (done) => {
   const nameToRemove = "Mary";
-
-  done(null /*, data*/);
+  Person.deleteMany({ name: nameToRemove })
+    .then(outcome => done(null, outcome))
+    .catch(err => done(err));
 };
 
-const queryChain = (done) => {
-  const foodToSearch = "burrito";
+const queryChain = (foodToSearch, done) => {
+  const actualDone = typeof foodToSearch === 'function' ? foodToSearch : done;
+  const actualFood = typeof foodToSearch === 'function' ? "burrito" : foodToSearch;
 
-  done(null /*, data*/);
+  Person.find({ favoriteFoods: actualFood })
+    .sort({ name: 'asc' })
+    .limit(2)
+    .select('-age')
+    .exec((err, data) => {
+      if (err) {
+        if (typeof actualDone === 'function') return actualDone(err);
+        return console.error(err);
+      }
+      if (typeof actualDone === 'function') {
+        actualDone(null, data);
+      }
+    });
 };
-
 /** **Well Done !!**
 /* You completed these challenges, let's go celebrate !
  */
